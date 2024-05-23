@@ -1,0 +1,102 @@
+scalar DateTime
+    @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
+
+scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
+
+enum UserRole {
+    USER @enum(value: "user")
+    CASHIER @enum(value: "cashier")
+    ADMIN @enum(value: "admin")
+}
+
+enum TransactionType {
+    PURCHASE @enum(value: "purchase")
+    SALE @enum(value: "sale")
+    EXPIRED @enum(value: "expired")
+}
+
+type User {
+    id: ID!
+    name: String!
+    image: String
+    role: UserRole
+    email: String!
+    email_verified_at: DateTime
+    created_at: DateTime!
+    updated_at: DateTime!
+}
+
+type Category {
+    id: ID!
+    name: String!
+    image: String
+    description: String
+    created_at: DateTime!
+    updated_at: DateTime!
+    user: User!
+}
+
+type Product {
+    id: ID!
+    name: String!
+    image: String
+    buying_price: Float
+    selling_price: Float
+    serial: String
+    description: String
+    supplier: String
+    created_at: DateTime!
+    updated_at: DateTime!
+    user: User!
+    category: Category!
+}
+
+type Client {
+    id: ID!
+    name: String!
+    contact: String
+    image: String
+    description: String
+    created_at: DateTime!
+    updated_at: DateTime!
+    user: User!
+}
+
+type Transaction {
+    id: ID!
+    quantity: Int!
+    type: TransactionType
+    group: Int
+    total: Float
+    expiration_date: Date
+    description: String
+    created_at: DateTime!
+    updated_at: DateTime!
+    user: User!
+    client: Client!
+    product: Product!
+}
+
+type Query {
+    user(
+        id: ID @eq @rules(apply: ["prohibits:email", "required_without:email"])
+
+        email: String
+            @eq
+            @rules(apply: ["prohibits:id", "required_without:id", "email"])
+    ): User @find
+
+    users(name: String @where(operator: "like")): [User!]! @paginate
+
+    category(id: ID): Category @find
+    categories: [Category] @paginate
+
+    product(id: ID): Product @find
+    products: [Product] @paginate
+
+    client(id: ID): Client @find
+    clients: [Client] @paginate
+
+    transaction(id: ID): Transaction @find
+    transactions: [Transaction] @paginate
+}
